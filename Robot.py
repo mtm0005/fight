@@ -38,7 +38,7 @@ class Robot(Character):
         self.apply_force(Vector(x=100, y=0))
 
     def jump(self):
-        self.apply_force(Vector(x=0, y=5000))
+        self.apply_force(Vector(x=0, y=7500))
 
     def dodge(self):
         print('dodge')
