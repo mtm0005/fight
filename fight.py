@@ -158,7 +158,7 @@ def game_loop():
 
         # Display each characters health
         string_width = 20
-        for i, character in enumerate(characters):
+        for character in characters:
             health_string = character.name + ': ' + str(character.hit_points)
             utils.message_to_screen(health_string, display, x_pos=string_width,
                                     y_pos=5, color=Color.red.value)
