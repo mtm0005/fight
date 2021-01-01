@@ -17,10 +17,11 @@ from vector import Vector
 class Cat(Character):
 
     def __init__(self, display, name, mass=1.0, position=Vector(),
-                 is_dummy=False):
+                 is_dummy=False, *args, **kwargs):
 
         Character.__init__(self, display, name, is_dummy=is_dummy, mass=mass,
-                           position=copy.copy(position), running_acceleration_cap=2000)
+                           position=copy.copy(position), running_acceleration_cap=2000,
+                           *args, **kwargs)
 
         self.width = 90
         self.height = 70
@@ -29,8 +30,9 @@ class Cat(Character):
                                                  self.position.y,
                                                  self.width,
                                                  self.height])
-    
+
         self.attacks = []
+        self.manager = None
 
     def move_left(self):
         self.apply_force(Vector(x=-100, y=0))
@@ -58,7 +60,7 @@ class Cat(Character):
             x_velocity -= 120
             # The width of the rocket is 35
             x_position = self.position.x - 35
-        
+
         velocity = Vector(x_velocity, self.velocity.y)
         position = Vector(x_position, self.position.y + (self.height/2))
         rocket = Rocket(self.display, velocity, position, self.manager)
@@ -128,7 +130,7 @@ class Cat(Character):
 
         # Draw the eye.
         pygame.draw.circle(self.display, Color.dark_green.value,
-                         [int(self.position.x + self.width/9),
+                          [int(self.position.x + self.width/9),
                           int(self.position.y + self.height/7)],
                           int(self.width/36))
 

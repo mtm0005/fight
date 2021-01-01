@@ -18,14 +18,16 @@ from vector import Vector
 
 pygame.init()
 
-display_width = 1500
-display_height = 600
-stage_height = 100
+NUM_LIVES = 3
 
-display = pygame.display.set_mode((display_width, display_height))
+DISPLAY_WIDTH = 1300
+DISPLAY_HEIGHT = 600
+STAGE_HEIGHT = 100
+
+display = pygame.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT))
 pygame.display.set_caption('FIGHT!')
 
-frames_per_second = 30
+FRAMES_PER_SECOND = 30
 clock = pygame.time.Clock()
 
 platform = Platform(display)
@@ -33,18 +35,19 @@ platform = Platform(display)
 def draw_stage():
     display.fill(Color.blue.value)
     pygame.draw.rect(display, Color.green.value,
-                     [0, display_height - stage_height,
-                      display_width, stage_height])
+                     [0, DISPLAY_HEIGHT - STAGE_HEIGHT,
+                      DISPLAY_WIDTH, STAGE_HEIGHT])
     platform.draw()
 
 def pause_game():
     game_paused = True
     game_over = False
     while game_paused:
-        utils.message_to_screen('Game Paused.', display, display_width/2,
-                                display_height/2, color=Color.red.value)
+        utils.message_to_screen('Game Paused.', display, DISPLAY_WIDTH/2,
+                                DISPLAY_HEIGHT/2, color=Color.red.value)
         utils.message_to_screen('Press P to play or Q to quit', display,
-                          display_width/2, display_height/2+20, color=Color.red.value)
+                                DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2+20,
+                                color=Color.red.value)
         pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -64,17 +67,19 @@ def game_loop():
     game_over = True
     game_reset = True
 
-    # Set up characters.
-    robot_initial_position = Vector(display_width/4,
-                                    display_height-stage_height-50)
+    cat_won = False
+    robot_won = False
 
-    cat_initial_position = Vector(display_width - display_width/4 - 55,
-                                  display_height-stage_height-50)
+    # Set up characters.
+    robot_initial_position = Vector(DISPLAY_WIDTH/4,
+                                    DISPLAY_HEIGHT-STAGE_HEIGHT-50)
+
+    cat_initial_position = Vector(DISPLAY_WIDTH - DISPLAY_WIDTH/4 - 55,
+                                  DISPLAY_HEIGHT-STAGE_HEIGHT-50)
 
     robot = Robot(display, "robot", position=robot_initial_position)
-    cat = Cat(display, "cat", is_dummy=False, position=cat_initial_position)
+    cat = Cat(display, "cat", is_dummy=False, position=cat_initial_position, facing_right=False)
     cat.set_up_key_commands('alt')
-    cat.facing_right = False
 
     characters = [robot, cat]
 
@@ -94,9 +99,15 @@ def game_loop():
         while game_over:
             display.fill(Color.white.value)
             utils.message_to_screen('Welcome to Fight!', display,
-                                    display_width/2, display_height/2)
+                                    DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2)
             utils.message_to_screen('Press P to play or Q to quit', display,
-                              display_width/2, display_height/2+20)
+                                    DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2+20)
+            if cat_won:
+                utils.message_to_screen("Cat won!", display,
+                                        DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2+40)
+            elif robot_won:
+                utils.message_to_screen("Robot won!", display,
+                                        DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2+40)
             pygame.display.update()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -113,8 +124,11 @@ def game_loop():
         # began.
         if game_reset:
             game_reset = False
+            cat_won = False
+            robot_won = False
             for character in characters:
                 character.reset()
+                character.deaths = 0
 
         # Check for events that don't infulence the game characters
         # movement, e.g. pause or quit events.
@@ -137,24 +151,36 @@ def game_loop():
             character.update(events)
 
             # If the character is going out of the display then the
-            # character is dead and needs to be reset.
+            # character is dead.
             # Check the x-axis.
             if character.position.x <= (-character.width + 5):
                 character.position.x = -character.width + 5
-                character.reset()
+                character.die()
 
-            elif character.position.x >= (display_width - 5):
-                character.position.x = display_width - 5
-                character.reset()
+            elif character.position.x >= (DISPLAY_WIDTH - 5):
+                character.position.x = DISPLAY_WIDTH - 5
+                character.die()
 
             # Then check the y-axis.
             if character.position.y <= (-character.height + 5):
                 character.position.y = -character.height + 5
-                character.reset()
+                character.die()
 
-            elif character.position.y >= (display_height - 5):
-                character.position.y = display_height - 5
-                character.reset()
+            elif character.position.y >= (DISPLAY_HEIGHT - 5):
+                character.position.y = DISPLAY_HEIGHT - 5
+                character.die()
+
+            if character.deaths >= NUM_LIVES:
+                if character.name == 'robot':
+                    cat_won = True
+                    robot_won = False
+                else:
+                    robot_won = True
+                    cat_won = False
+
+                # Return to the title screen.
+                game_over = True
+                game_reset = True
 
         # Display each characters health
         string_width = 20
@@ -162,10 +188,13 @@ def game_loop():
             health_string = character.name + ': ' + str(character.hit_points)
             utils.message_to_screen(health_string, display, x_pos=string_width,
                                     y_pos=5, color=Color.red.value)
+            utils.message_to_screen('{}'.format(NUM_LIVES-character.deaths),
+                                    display, x_pos=string_width, y_pos=25,
+                                    color=Color.red.value)
             string_width = string_width + (len(health_string) * 10) + 10
 
         pygame.display.update()
-        clock.tick(frames_per_second)
+        clock.tick(FRAMES_PER_SECOND)
 
     pygame.quit()
     quit()

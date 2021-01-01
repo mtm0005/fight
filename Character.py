@@ -16,7 +16,7 @@ from vector import Vector
 class Character(PhysicsObject, metaclass=abc.ABCMeta):
 
     def __init__(self, display, name, mass=1.0, position=Vector(), is_dummy=False,
-                 key_commands='default', running_acceleration_cap=1400):
+                 facing_right=True, key_commands='default', running_acceleration_cap=1400):
 
         PhysicsObject.__init__(self, name, mass=mass, position=position)
         self.display = display
@@ -25,7 +25,8 @@ class Character(PhysicsObject, metaclass=abc.ABCMeta):
         self.height = 0
         self.moving_right = False
         self.moving_left = False
-        self.facing_right = True
+        self.facing_right = facing_right
+        self.initially_facing_right = facing_right
         self.dodging = False
         self.bounding_shapes = [BoundingShape([0, 0, 0, 0])]
         self.is_dummy = is_dummy
@@ -36,6 +37,7 @@ class Character(PhysicsObject, metaclass=abc.ABCMeta):
         self.double_jumping = False
         self.initial_position = copy.copy(self.position)
         self.is_alive = True
+        self.deaths = 0
 
         self.set_up_key_commands()
 
@@ -67,10 +69,15 @@ class Character(PhysicsObject, metaclass=abc.ABCMeta):
         self.dodging = False
         self.moving_left = False
         self.moving_right = False
+        self.facing_right = self.initially_facing_right
+
+    def die(self):
+        self.deaths += 1
+        self.reset()
 
     @abc.abstractmethod
     def draw(self):
-       pass
+        pass
 
     @abc.abstractmethod
     def update(self, events):

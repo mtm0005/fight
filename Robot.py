@@ -17,10 +17,10 @@ from vector import Vector
 class Robot(Character):
 
     def __init__(self, display, name, mass=1.75, position=Vector(),
-                 is_dummy=False):
+                 is_dummy=False, *args, **kwargs):
 
         Character.__init__(self, display, name, is_dummy=is_dummy, mass=mass,
-                           position=copy.copy(position))
+                           position=copy.copy(position), *args, **kwargs)
         self.width = 60
         self.height = 100
         self.bounding_shapes[0] = BoundingShape([self.position.x,
