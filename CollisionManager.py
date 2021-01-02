@@ -7,8 +7,11 @@ Created on Mon Feb  1 21:55:06 2016
 
 class CollisionManager():
 
-    def __init__(self, list_of_objects=[], debug=False):
-        self.list_of_objects = list_of_objects
+    def __init__(self, list_of_objects=None, debug=False):
+
+        self.list_of_objects = []
+        if list_of_objects is not None:
+            self.list_of_objects = list_of_objects
         self.index = 0
         self.debug = debug
 
@@ -62,7 +65,7 @@ class CollisionManager():
         shape_2_highest_y = shape_2.rect[1]
 
         if (shape_1_lowest_y >= shape_2_highest_y and
-            shape_1_highest_y <= shape_2_lowest_y):
+                shape_1_highest_y <= shape_2_lowest_y):
             shapes_are_colliding_y = True
 
         shape_1_lowest_x = shape_1.rect[0] + shape_1.rect[2]
@@ -72,7 +75,7 @@ class CollisionManager():
         shape_2_highest_x = shape_2.rect[0]
 
         if (shape_1_lowest_x >= shape_2_highest_x and
-            shape_1_highest_x <= shape_2_lowest_x):
+                shape_1_highest_x <= shape_2_lowest_x):
             shapes_are_colliding_x = True
 
         if (shapes_are_colliding_y and shapes_are_colliding_x):
@@ -93,8 +96,8 @@ class CollisionManager():
 
         for i in range(len(self.list_of_objects) - 1):
             current_object = self.list_of_objects[i]
-            for n in range(i + 1, len(self.list_of_objects)):
-                next_object = self.list_of_objects[n]
+            for j in range(i + 1, len(self.list_of_objects)):
+                next_object = self.list_of_objects[j]
                 if self.objects_colliding(current_object, next_object):
                     current_object.colliding_with_object(next_object)
                     next_object.colliding_with_object(current_object)

@@ -25,9 +25,9 @@ class Rocket(PhysicsObject):
         self.power = 100
         self.initial_velocity = velocity
 
-        self.bounding_shapes.append(BoundingShape(
-                                   [self.position.x, self.position.y,
-                                    self.width, self.height]))
+        self.bounding_shapes.append(
+            BoundingShape([self.position.x, self.position.y,
+                           self.width, self.height]))
         self.collision_manager = collision_manager
         self.collision_manager.add_object(self)
 
@@ -82,12 +82,12 @@ class Rocket(PhysicsObject):
             pygame.draw.circle(self.display, Color.black.value,
                                [int(self.position.x + self.width),
                                 int(self.position.y + self.height/2)],
-                                int(self.height/2))
+                               int(self.height/2))
         else:
             pygame.draw.circle(self.display, Color.black.value,
                                [int(self.position.x),
                                 int(self.position.y + self.height/2)],
-                                int(self.height/2))
+                               int(self.height/2))
 
         # Draw the exhaust.
         if self.initial_velocity.x > 0:
@@ -106,16 +106,17 @@ class Rocket(PhysicsObject):
             pygame.draw.circle(self.display, Color.red.value,
                                [int(self.position.x + self.width/2),
                                 int(self.position.y + self.height/2)],
-                                int(self.explosion_radius))
+                               int(self.explosion_radius))
 
             self.explosion_radius += self.height/2.5
             self.explosion_counter -= 1
 
             # Override our existing bounding box.
-            self.bounding_shapes[0].rect = [self.position.x - self.explosion_radius/2,
-                         self.position.y - self.explosion_radius + 10,
-                         2 * self.explosion_radius,
-                         2 * self.explosion_radius - 10]
+            self.bounding_shapes[0].rect = [
+                self.position.x - self.explosion_radius/2,
+                self.position.y - self.explosion_radius + 10,
+                2 * self.explosion_radius,
+                2 * self.explosion_radius - 10]
 
             # Uncomment the next line to view the bounding box.
             #pygame.draw.rect(self.display, Color.black.value, self.rect)

@@ -17,11 +17,11 @@ from vector import Vector
 class Cat(Character):
 
     def __init__(self, display, name, mass=1.0, position=Vector(),
-                 is_dummy=False, *args, **kwargs):
+                 is_dummy=False, **kwargs):
 
         Character.__init__(self, display, name, is_dummy=is_dummy, mass=mass,
                            position=copy.copy(position), running_acceleration_cap=2000,
-                           *args, **kwargs)
+                           **kwargs)
 
         self.width = 90
         self.height = 70
@@ -130,9 +130,9 @@ class Cat(Character):
 
         # Draw the eye.
         pygame.draw.circle(self.display, Color.dark_green.value,
-                          [int(self.position.x + self.width/9),
-                          int(self.position.y + self.height/7)],
-                          int(self.width/36))
+                           [int(self.position.x + self.width/9),
+                            int(self.position.y + self.height/7)],
+                           int(self.width/36))
 
         # Draw the body.
         pygame.draw.rect(self.display, Color.grey.value,
@@ -219,9 +219,9 @@ class Cat(Character):
 
         # Draw the eye.
         pygame.draw.circle(self.display, Color.dark_green.value,
-                         [int(self.position.x + 8 * self.width/9),
-                          int(self.position.y + self.height/7)],
-                          int(self.width/36))
+                           [int(self.position.x + 8 * self.width/9),
+                            int(self.position.y + self.height/7)],
+                           int(self.width/36))
 
         # Draw the body.
         pygame.draw.rect(self.display, Color.grey.value,
@@ -264,3 +264,4 @@ class Cat(Character):
 
         pygame.draw.polygon(self.display, Color.grey.value, tail_points)
         pygame.draw.polygon(self.display, Color.black.value, tail_points, 3)
+    

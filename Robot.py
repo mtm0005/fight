@@ -17,10 +17,10 @@ from vector import Vector
 class Robot(Character):
 
     def __init__(self, display, name, mass=1.75, position=Vector(),
-                 is_dummy=False, *args, **kwargs):
+                 is_dummy=False, **kwargs):
 
         Character.__init__(self, display, name, is_dummy=is_dummy, mass=mass,
-                           position=copy.copy(position), *args, **kwargs)
+                           position=copy.copy(position), **kwargs)
         self.width = 60
         self.height = 100
         self.bounding_shapes[0] = BoundingShape([self.position.x,
@@ -85,12 +85,12 @@ class Robot(Character):
 
         # Draw the eyes
         pygame.draw.circle(self.display, Color.red.value,
-                         [int(self.position.x + (3 * self.width)/8),
-                          int(self.position.y + self.width/8)], 4)
+                           [int(self.position.x + (3 * self.width)/8),
+                            int(self.position.y + self.width/8)], 4)
 
         pygame.draw.circle(self.display, Color.red.value,
-                         [int(self.position.x + (5 * self.width)/8),
-                          int(self.position.y + self.width/8)], 4)
+                           [int(self.position.x + (5 * self.width)/8),
+                            int(self.position.y + self.width/8)], 4)
 
         # Draw the mouth
         pygame.draw.rect(self.display, Color.black.value,
@@ -110,12 +110,12 @@ class Robot(Character):
         # Draw the wheels
         pygame.draw.circle(self.display, Color.black.value,
                            [int(self.position.x + self.width/4),
-                           int(self.position.y + (3*self.width)/2 + self.width/12)],
+                            int(self.position.y + (3*self.width)/2 + self.width/12)],
                            int(self.width/12))
 
         pygame.draw.circle(self.display, Color.black.value,
                            [int(self.position.x + (3*self.width)/4),
-                           int(self.position.y + (3*self.width)/2 + self.width/12)],
+                            int(self.position.y + (3*self.width)/2 + self.width/12)],
                            int(self.width/12))
 
         for attack in self.attacks:

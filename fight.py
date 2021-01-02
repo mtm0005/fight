@@ -24,22 +24,16 @@ DISPLAY_WIDTH = 1300
 DISPLAY_HEIGHT = 600
 STAGE_HEIGHT = 100
 
-display = pygame.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT))
-pygame.display.set_caption('FIGHT!')
-
 FRAMES_PER_SECOND = 30
-clock = pygame.time.Clock()
 
-platform = Platform(display)
-
-def draw_stage():
+def draw_stage(display, platform):
     display.fill(Color.blue.value)
     pygame.draw.rect(display, Color.green.value,
                      [0, DISPLAY_HEIGHT - STAGE_HEIGHT,
                       DISPLAY_WIDTH, STAGE_HEIGHT])
     platform.draw()
 
-def pause_game():
+def pause_game(display):
     game_paused = True
     game_over = False
     while game_paused:
@@ -69,6 +63,12 @@ def game_loop():
 
     cat_won = False
     robot_won = False
+
+    display = pygame.display.set_mode((DISPLAY_WIDTH, DISPLAY_HEIGHT))
+    pygame.display.set_caption('FIGHT!')
+
+    clock = pygame.time.Clock()
+    platform = Platform(display)
 
     # Set up characters.
     robot_initial_position = Vector(DISPLAY_WIDTH/4,
@@ -138,12 +138,12 @@ def game_loop():
                 game_exit = True
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    game_over = pause_game()
+                    game_over = pause_game(display)
                     if game_over:
                         game_reset = True
                     break
 
-        draw_stage()
+        draw_stage(display, platform)
         collision_manager.update_objects()
 
         # Update each character in the game.

@@ -16,7 +16,7 @@ from vector import Vector
 class Character(PhysicsObject, metaclass=abc.ABCMeta):
 
     def __init__(self, display, name, mass=1.0, position=Vector(), is_dummy=False,
-                 facing_right=True, key_commands='default', running_acceleration_cap=1400):
+                 facing_right=True, running_acceleration_cap=1400):
 
         PhysicsObject.__init__(self, name, mass=mass, position=position)
         self.display = display
