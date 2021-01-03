@@ -20,7 +20,12 @@ class Platform(PhysicsObject):
         self.color = color
         self.movable = False
         self.can_be_moved_through = False
-        self.rect = [275, 575, 950, 10]
+
+        self.rect = [
+            275,  # left x position
+            575,  # top y position
+            950,  # length
+            10]   # width
         self.bounding_shapes = [BoundingShape(self.rect)]
         self.acceleration = 0
 

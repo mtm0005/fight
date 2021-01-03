@@ -26,6 +26,74 @@ STAGE_HEIGHT = 100
 
 FRAMES_PER_SECOND = 30
 
+def update_characters(characters, events):
+    robot_won = False
+    cat_won = False
+    for character in characters:
+        character.update(events)
+
+        # If the character is going out of the display then the
+        # character is dead.
+        # Check the x-axis.
+        if character.position.x <= (-character.width + 5):
+            character.position.x = -character.width + 5
+            character.die()
+
+        elif character.position.x >= (DISPLAY_WIDTH - 5):
+            character.position.x = DISPLAY_WIDTH - 5
+            character.die()
+
+        # Then check the y-axis.
+        if character.position.y <= (-character.height + 5):
+            character.position.y = -character.height + 5
+            character.die()
+
+        elif character.position.y >= (DISPLAY_HEIGHT - 5):
+            character.position.y = DISPLAY_HEIGHT - 5
+            character.die()
+
+        if character.deaths >= NUM_LIVES:
+            if character.name == 'robot':
+                cat_won = True
+                robot_won = False
+            else:
+                robot_won = True
+                cat_won = False
+
+    return robot_won, cat_won
+
+def display_lives_and_health(display, characters):
+    string_width = 20
+    for character in characters:
+        health_string = f'{character.name}: {character.hit_points}'
+        utils.message_to_screen(health_string, display, x_pos=string_width,
+                                y_pos=5, color=Color.red.value, disable_auto_offset=True)
+        utils.message_to_screen(f'{NUM_LIVES-character.deaths}',
+                                display, x_pos=string_width, y_pos=25,
+                                color=Color.red.value, disable_auto_offset=True)
+        string_width = string_width + (len(health_string) * 16)
+
+def display_title_screen(display, robot_won=False, cat_won=False, game_paused=False):
+    msg = 'Welcome to Fight!'
+    color = Color.black.value
+    if not game_paused:
+        display.fill(Color.white.value)
+    else:
+        msg = 'Game Paused.'
+        color = Color.red.value
+
+    utils.message_to_screen(msg, display, DISPLAY_WIDTH/2,
+                            DISPLAY_HEIGHT/2, color=color)
+    utils.message_to_screen('Press P to play or Q to quit', display,
+                            DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2+20, color=color)
+    if cat_won:
+        utils.message_to_screen("Cat won!", display,
+                                DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2+40)
+    elif robot_won:
+        utils.message_to_screen("Robot won!", display,
+                                DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2+40)
+    pygame.display.update()
+
 def draw_stage(display, platform):
     display.fill(Color.blue.value)
     pygame.draw.rect(display, Color.green.value,
@@ -37,12 +105,7 @@ def pause_game(display):
     game_paused = True
     game_over = False
     while game_paused:
-        utils.message_to_screen('Game Paused.', display, DISPLAY_WIDTH/2,
-                                DISPLAY_HEIGHT/2, color=Color.red.value)
-        utils.message_to_screen('Press P to play or Q to quit', display,
-                                DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2+20,
-                                color=Color.red.value)
-        pygame.display.update()
+        display_title_screen(display, game_paused=True)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -97,18 +160,7 @@ def game_loop():
         # Display main menu until the user starts a game or exits the
         # program.
         while game_over:
-            display.fill(Color.white.value)
-            utils.message_to_screen('Welcome to Fight!', display,
-                                    DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2)
-            utils.message_to_screen('Press P to play or Q to quit', display,
-                                    DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2+20)
-            if cat_won:
-                utils.message_to_screen("Cat won!", display,
-                                        DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2+40)
-            elif robot_won:
-                utils.message_to_screen("Robot won!", display,
-                                        DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2+40)
-            pygame.display.update()
+            display_title_screen(display, robot_won, cat_won)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     game_exit = True
@@ -147,51 +199,13 @@ def game_loop():
         collision_manager.update_objects()
 
         # Update each character in the game.
-        for character in characters:
-            character.update(events)
+        robot_won, cat_won = update_characters(characters, events)
+        if robot_won or cat_won:
+            # Return to the title screen.
+            game_over = True
+            game_reset = True
 
-            # If the character is going out of the display then the
-            # character is dead.
-            # Check the x-axis.
-            if character.position.x <= (-character.width + 5):
-                character.position.x = -character.width + 5
-                character.die()
-
-            elif character.position.x >= (DISPLAY_WIDTH - 5):
-                character.position.x = DISPLAY_WIDTH - 5
-                character.die()
-
-            # Then check the y-axis.
-            if character.position.y <= (-character.height + 5):
-                character.position.y = -character.height + 5
-                character.die()
-
-            elif character.position.y >= (DISPLAY_HEIGHT - 5):
-                character.position.y = DISPLAY_HEIGHT - 5
-                character.die()
-
-            if character.deaths >= NUM_LIVES:
-                if character.name == 'robot':
-                    cat_won = True
-                    robot_won = False
-                else:
-                    robot_won = True
-                    cat_won = False
-
-                # Return to the title screen.
-                game_over = True
-                game_reset = True
-
-        # Display each characters health
-        string_width = 20
-        for character in characters:
-            health_string = character.name + ': ' + str(character.hit_points)
-            utils.message_to_screen(health_string, display, x_pos=string_width,
-                                    y_pos=5, color=Color.red.value)
-            utils.message_to_screen('{}'.format(NUM_LIVES-character.deaths),
-                                    display, x_pos=string_width, y_pos=25,
-                                    color=Color.red.value)
-            string_width = string_width + (len(health_string) * 10) + 10
+        display_lives_and_health(display, characters)
 
         pygame.display.update()
         clock.tick(FRAMES_PER_SECOND)
