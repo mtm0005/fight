@@ -22,7 +22,7 @@ class Platform(PhysicsObject):
         self.can_be_moved_through = False
 
         self.rect = [
-            275,  # left x position
+            175,  # left x position
             575,  # top y position
             950,  # length
             10]   # width
