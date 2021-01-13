@@ -1,12 +1,32 @@
+import argparse
 import socket
 import sys
 
-server_ip = sys.argv[1]
-port = int(sys.argv[2])
-print(f'Attempting to connect to fight server at {server_ip}:{port}')
 
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((server_ip, port))
-print(s.recv(1024))
+def parse_args(cmd_line_args):
+    parser = argparse.ArgumentParser(description='Connect to a "Fight!" server')
 
-print('done')
+    parser.add_argument('server_ip', metavar='server-ip',
+                        help='IP of the server to connect with')
+    parser.add_argument('--port', '-p',
+                        type=int,
+                        default=2015,
+                        help='port for sockets to communicate over (defaults to 2015)')
+
+    args = parser.parse_args(cmd_line_args)
+    return args
+
+
+def main(cmd_line_args):
+    args = parse_args(cmd_line_args)
+    print(f'Attempting to connect to fight server at {args.server_ip}:{args.port}')
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((args.server_ip, args.port))
+    print(s.recv(1024))
+
+    print('done')
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
