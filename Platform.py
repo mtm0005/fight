@@ -22,7 +22,7 @@ class Platform(PhysicsObject):
         self.can_be_moved_through = False
 
         self.rect = [
-            275,  # left x position
+            175,  # left x position
             575,  # top y position
             950,  # length
             10]   # width
@@ -36,7 +36,6 @@ class Platform(PhysicsObject):
         pass
 
     def colliding_with_object(self, physics_object):
-        #print("platform is colliding with %s" % physics_object.name)
         physics_object.apply_force(Vector(
             y=(physics_object.acceleration.y*physics_object.mass)))
 
