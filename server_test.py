@@ -32,7 +32,6 @@ def app(client_socket, address, q):
         msgs.append(recv_msg)
 
         client_socket.send(recv_msg.encode('utf-8'))
-        #client_socket.send('hello from app'.encode('utf-8'))
         if recv_msg == 'exit':
             client_socket.close()
             q.put((address, msgs))
@@ -105,7 +104,6 @@ def run_server(args):
             server.close()
             print(f'Exception occurred: {e}')
             print('Closing all active connections.')
-            q.close()
             for process in active_conns.values():
                 process.join()
 
