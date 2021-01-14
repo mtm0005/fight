@@ -24,6 +24,7 @@ def main(cmd_line_args):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((args.server_ip, args.port))
     print(s.recv(1024))
+    s.send('exit'.encode('utf-8'))
 
     print('done')
 
