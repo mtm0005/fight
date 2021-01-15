@@ -3,9 +3,7 @@ import datetime
 import socket
 import sys
 
-#from multiprocessing import Process, Queue
-from threading import Thread as Process
-from queue import Queue
+from multiprocessing import Process, Queue
 from network_utils import get_private_ip, get_public_ip
 
 
