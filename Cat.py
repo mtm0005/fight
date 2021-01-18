@@ -69,6 +69,11 @@ class Cat(Character):
     def update(self, events):
         # Call parent class update.
         Character.update(self, events)
+        for attack in self.attacks:
+            if not attack.exploded:
+                attack.update()
+            else:
+                self.attacks.remove(attack)
 
     def draw(self):
         # Draw bounding box
@@ -80,12 +85,6 @@ class Cat(Character):
             self.draw_facing_right()
         else:
             self.draw_facing_left()
-
-        for attack in self.attacks:
-            if not attack.exploded:
-                attack.update()
-            else:
-                self.attacks.remove(attack)
 
     def draw_facing_left(self):
         # Draw the cat's head

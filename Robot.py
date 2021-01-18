@@ -67,6 +67,11 @@ class Robot(Character):
     def update(self, events):
         # Call parent class update.
         Character.update(self, events)
+        for attack in self.attacks:
+            if not attack.exploded:
+                attack.update()
+            else:
+                self.attacks.remove(attack)
 
     def draw(self):
         # Draw bounding box
@@ -117,9 +122,3 @@ class Robot(Character):
                            [int(self.position.x + (3*self.width)/4),
                             int(self.position.y + (3*self.width)/2 + self.width/12)],
                            int(self.width/12))
-
-        for attack in self.attacks:
-            if not attack.exploded:
-                attack.update()
-            else:
-                self.attacks.remove(attack)

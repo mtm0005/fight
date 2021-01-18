@@ -7,6 +7,7 @@ Created on Wed Nov 18 19:41:13 2015
 
 import copy
 import pygame
+import socket
 import utils
 
 from Cat import Cat
@@ -25,6 +26,15 @@ DISPLAY_HEIGHT = 600
 STAGE_HEIGHT = 100
 
 FRAMES_PER_SECOND = 30
+
+class Event():
+
+    def __init__(self, key, type_='keydown'):
+        self.type = type_
+        self.key = key
+
+    def to_bytes(self):
+        return f'k: {self.key}, t: {self.type}\n'.encode('utf-8')
 
 def update_characters(characters, events):
     robot_won = False
@@ -119,6 +129,73 @@ def pause_game(display):
 
     return game_over
 
+
+def get_character_data_from_bytes(raw_bytes):
+    robot_data = Robot(None, '')
+    cat_data = Cat(None, '')
+
+    try:
+        robot_str, cat_str, _ = raw_bytes.decode('utf-8').split('\n')
+    except Exception as e:
+        print(f'Error reading raw_bytes: {raw_bytes}')
+        raise e
+
+    for key_value_pair in robot_str.split(','):
+        k, v = key_value_pair.split(':')
+        k = k.strip()
+        v = v.strip()
+        if k == 'hp':
+            robot_data.hit_points = int(v)
+        elif k == 'px':
+            robot_data.position.x = float(v)
+        elif k == 'py':
+            robot_data.position.y = float(v)
+        else:
+            raise KeyError(f'Invalid key, {k}, found in raw bytes:\n{raw_bytes}')
+
+    for key_value_pair in cat_str.split(','):
+        k, v = key_value_pair.split(':')
+        k = k.strip()
+        v = v.strip()
+        if k == 'hp':
+            cat_data.hit_points = int(v)
+        elif k == 'px':
+            cat_data.position.x = float(v)
+        elif k == 'py':
+            cat_data.position.y = float(v)
+        else:
+            raise KeyError(f'Invalid key, {k}, found in raw bytes:\n{raw_bytes}')
+
+    return robot_data, cat_data
+
+
+def convert_events_to_bytes(events):
+    for event in events:
+        if event.key == pygame.K_w:
+            event.key = 'w'
+        elif event.key == pygame.K_a:
+            event.key = 'a'
+        elif event.key == pygame.K_s:
+            event.key = 's'
+        elif event.key == pygame.K_d:
+            event.key = 'd'
+        elif event.key == pygame.K_e:
+            event.key = 'e'
+
+        elif event.key == pygame.K_i:
+            event.key = 'i'
+        elif event.key == pygame.K_j:
+            event.key = 'j'
+        elif event.key == pygame.K_k:
+            event.key = 'k'
+        elif event.key == pygame.K_l:
+            event.key = 'l'
+        elif event.key == pygame.K_o:
+            event.key = 'o'
+
+    return b''.join([event.to_bytes() for event in events])
+
+
 def game_loop():
     game_exit = False
     game_over = True
@@ -155,22 +232,13 @@ def game_loop():
 
     collision_manager.print_items()
 
-    while not game_exit:
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect(('70.249.190.34', 2015))
+    #s.connect(('localhost', 2015))
+    print(s.recv(1024)) # Hello from server
+    print(s.recv(1024)) # start game
 
-        # Display main menu until the user starts a game or exits the
-        # program.
-        while game_over:
-            display_title_screen(display, robot_won, cat_won)
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    game_exit = True
-                    game_over = False
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_q:
-                        game_exit = True
-                        game_over = False
-                    elif event.key == pygame.K_p:
-                        game_over = False
+    while not game_exit:
 
         # Reset our characters if the game is starting over or just
         # began.
@@ -185,27 +253,55 @@ def game_loop():
         # Check for events that don't infulence the game characters
         # movement, e.g. pause or quit events.
         events = copy.copy(pygame.event.get())
+        events_to_send = []
         for event in events:
             if event.type == pygame.QUIT:
                 game_exit = True
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    game_over = pause_game(display)
-                    if game_over:
-                        game_reset = True
-                    break
+                events_to_send.append(Event(event.key))
+            elif event.type == pygame.KEYUP:
+                events_to_send.append(Event(event.key, 'keyup'))
+                
+        # Send events to server (must be sent as a bytes object)
+        bytes_to_send = convert_events_to_bytes(events_to_send)
+        if not bytes_to_send:
+            s.send('nodata'.encode('utf-8'))
+        else:
+            s.sendall(bytes_to_send)
 
         draw_stage(display, platform)
-        collision_manager.update_objects()
-
-        # Update each character in the game.
-        robot_won, cat_won = update_characters(characters, events)
-        if robot_won or cat_won:
-            # Return to the title screen.
-            game_over = True
-            game_reset = True
+        
+        # get data from server
+        robot_data, cat_data = get_character_data_from_bytes(s.recv(1024))
+        #robot.acceleration = robot_data.acceleration
+        #robot.attacks = robot_data.attacks
+        #robot.deaths = robot_data.deaths
+        #robot.double_jumping = robot_data.double_jumping
+        #robot.facing_right = robot_data.facing_right
+        #robot.falling = robot_data.falling
+        robot.hit_points = robot_data.hit_points
+        #robot.is_alive = robot_data.is_alive
+        #robot.jumping = robot_data.jumping
+        robot.position = robot_data.position
+        #robot.taking_damage = robot_data.taking_damage
+        #robot.velocity = robot_data.velocity
+        
+        #cat.acceleration = cat_data.acceleration
+        #cat.attacks = cat_data.attacks
+        #cat.deaths = cat_data.deaths
+        #cat.double_jumping = cat_data.double_jumping
+        #cat.facing_right = cat_data.facing_right
+        #cat.falling = cat_data.falling
+        cat.hit_points = cat_data.hit_points
+        #cat.is_alive = cat_data.is_alive
+        #cat.jumping = cat_data.jumping
+        cat.position = cat_data.position
+        #cat.taking_damage = cat_data.taking_damage
+        #cat.velocity = cat_data.velocity
 
         display_lives_and_health(display, characters)
+        for c in characters:
+            c.draw()
 
         pygame.display.update()
         clock.tick(FRAMES_PER_SECOND)
