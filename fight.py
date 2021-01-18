@@ -8,6 +8,7 @@ Created on Wed Nov 18 19:41:13 2015
 import copy
 import pygame
 import socket
+import sys
 import utils
 
 from Cat import Cat
@@ -233,8 +234,8 @@ def game_loop():
     collision_manager.print_items()
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(('70.249.190.34', 2015))
-    #s.connect(('localhost', 2015))
+
+    s.connect((sys.argv[1], int(sys.argv[2])))
     print(s.recv(1024)) # Hello from server
     print(s.recv(1024)) # start game
 
