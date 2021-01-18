@@ -29,7 +29,8 @@ class Rocket(PhysicsObject):
             BoundingShape([self.position.x, self.position.y,
                            self.width, self.height]))
         self.collision_manager = collision_manager
-        self.collision_manager.add_object(self)
+        if collision_manager:
+            self.collision_manager.add_object(self)
 
         # Variables used to manage explosions.
         self.time_limit = 45
@@ -122,7 +123,8 @@ class Rocket(PhysicsObject):
             #pygame.draw.rect(self.display, Color.black.value, self.rect)
         else:
             self.exploded = True
-            self.collision_manager.remove_object(self)
+            if self.collision_manager:
+                self.collision_manager.remove_object(self)
 
     def colliding_with_object(self, physics_object):
         if not physics_object.can_be_moved_through:

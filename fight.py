@@ -16,6 +16,7 @@ from CollisionManager import CollisionManager
 from Color import Color
 from Platform import Platform
 from Robot import Robot
+from Rocket import Rocket
 from vector import Vector
 
 pygame.init()
@@ -131,12 +132,22 @@ def pause_game(display):
     return game_over
 
 
-def get_character_data_from_bytes(raw_bytes):
+def get_character_data_from_bytes(raw_bytes, display):
     robot_data = Robot(None, '')
     cat_data = Cat(None, '')
+    rocket_data = []
 
     try:
-        robot_str, cat_str, _ = raw_bytes.decode('utf-8').split('\n')
+        robot_str = ''
+        cat_str = ''
+        rocket_strs = []
+        str_data = raw_bytes.decode('utf-8').split('\n')
+        if len(str_data) >= 3:
+            robot_str = str_data[0]
+            cat_str = str_data[1]
+            rocket_strs = str_data[2:]
+        if len(str_data) < 3:
+            print('not enough data')
     except Exception as e:
         print(f'Error reading raw_bytes: {raw_bytes}')
         raise e
@@ -151,6 +162,10 @@ def get_character_data_from_bytes(raw_bytes):
             robot_data.position.x = float(v)
         elif k == 'py':
             robot_data.position.y = float(v)
+        elif k == 'de':
+            robot_data.deaths = int(v)
+        elif k == 'fr':
+            robot_data.facing_right = True if v == 'True' else False
         else:
             raise KeyError(f'Invalid key, {k}, found in raw bytes:\n{raw_bytes}')
 
@@ -164,10 +179,50 @@ def get_character_data_from_bytes(raw_bytes):
             cat_data.position.x = float(v)
         elif k == 'py':
             cat_data.position.y = float(v)
+        elif k == 'de':
+            cat_data.deaths = int(v)
+        elif k == 'fr':
+            cat_data.facing_right = True if v == 'True' else False
         else:
             raise KeyError(f'Invalid key, {k}, found in raw bytes:\n{raw_bytes}')
 
-    return robot_data, cat_data
+    for rocket_str in rocket_strs:
+        rocket_str = rocket_str.strip()
+        if not rocket_str:
+            continue
+        x_pos = 0
+        y_pos = 0
+        init_vel_x = 0
+        explosion_counter = 11
+        explosion_radius = 10
+        exploding = False
+        for key_value_pair in rocket_str.split(','):
+            k, v = key_value_pair.split(':')
+            k = k.strip()
+            v = v.strip()
+            if k == 'px':
+                x_pos = float(v)
+            elif k == 'py':
+                y_pos = float(v)
+            elif k == 'iv':
+                init_vel_x = float(v)
+            elif k == 'ec':
+                explosion_counter = int(v)
+            elif k == 'er':
+                explosion_radius = float(explosion_radius)
+            elif k == 'e':
+                exploding = True if v == 'True' else False
+            else:
+                raise KeyError(f'Invalid key, {k}, found in raw bytes:\n{raw_bytes}')
+
+        rocket = Rocket(display, Vector(0, 0), Vector(x_pos, y_pos), None)
+        rocket.initial_velocity.x = init_vel_x
+        rocket.explosion_counter = explosion_counter
+        rocket.explosion_radius = explosion_radius
+        rocket.exploding = exploding
+        rocket_data.append(rocket)
+
+    return robot_data, cat_data, rocket_data
 
 
 def convert_events_to_bytes(events):
@@ -273,12 +328,12 @@ def game_loop():
         draw_stage(display, platform)
         
         # get data from server
-        robot_data, cat_data = get_character_data_from_bytes(s.recv(1024))
+        robot_data, cat_data, rocket_data = get_character_data_from_bytes(s.recv(1024), display)
         #robot.acceleration = robot_data.acceleration
         #robot.attacks = robot_data.attacks
-        #robot.deaths = robot_data.deaths
+        robot.deaths = robot_data.deaths
         #robot.double_jumping = robot_data.double_jumping
-        #robot.facing_right = robot_data.facing_right
+        robot.facing_right = robot_data.facing_right
         #robot.falling = robot_data.falling
         robot.hit_points = robot_data.hit_points
         #robot.is_alive = robot_data.is_alive
@@ -289,9 +344,9 @@ def game_loop():
         
         #cat.acceleration = cat_data.acceleration
         #cat.attacks = cat_data.attacks
-        #cat.deaths = cat_data.deaths
+        cat.deaths = cat_data.deaths
         #cat.double_jumping = cat_data.double_jumping
-        #cat.facing_right = cat_data.facing_right
+        cat.facing_right = cat_data.facing_right
         #cat.falling = cat_data.falling
         cat.hit_points = cat_data.hit_points
         #cat.is_alive = cat_data.is_alive
@@ -301,7 +356,7 @@ def game_loop():
         #cat.velocity = cat_data.velocity
 
         display_lives_and_health(display, characters)
-        for c in characters:
+        for c in characters + rocket_data:
             c.draw()
 
         pygame.display.update()
